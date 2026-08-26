@@ -1,0 +1,5 @@
+API_V1_PREFIX = "/api/v1"
+AUTH_PREFIX = "/auth"
+USERS_PREFIX = "/users"
+
+LOGIN_PATH = f"{API_V1_PREFIX}{AUTH_PREFIX}/login"
