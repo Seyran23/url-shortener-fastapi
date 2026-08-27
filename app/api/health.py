@@ -5,14 +5,15 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 
+from app.core.constants import HEALTH_PREFIX
 from app.db.session import engine
 
-router = APIRouter(tags=["health"])
+router = APIRouter(prefix=HEALTH_PREFIX, tags=["health"])
 
 START_TIME = time.monotonic()
 
 
-@router.get("/health")
+@router.get("")
 async def health_check() -> JSONResponse:
     try:
         async with engine.connect() as conn:
