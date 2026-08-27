@@ -21,3 +21,35 @@ class UserNotFoundError(AppError):
     """User not found."""
     status_code = 404
     error_code = "user_not_found"
+
+
+class LinkNotFoundError(AppError):
+    """Link not found."""
+    status_code = 404
+    error_code = "link_not_found"
+    
+class AliasAlreadyExistsError(AppError):
+    """This alias has already been taken."""
+    status_code = 409
+    error_code = "alias_already_exists"
+
+class LinkNotActiveError(AppError):
+    """This link is not active."""
+    status_code = 410
+    error_code = "link_is_not_active"
+    
+class LinkExpiredError(AppError):
+    """This link has expired. Extend its expiration date before activating it."""
+    status_code = 409
+    error_code = "link_expired"
+
+class ClickLimitReachedError(AppError):
+    """This link has reached its click limit. Increase the limit before activating it."""
+    status_code = 409
+    error_code = "click_limit_reached"
+
+class LinkUnavailableError(AppError):
+    """This link is not available."""
+    status_code = 410
+    error_code = "link_unavailable"
+
