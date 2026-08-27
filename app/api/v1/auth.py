@@ -7,7 +7,7 @@ from app.core.security import create_access_token
 from app.db.session import get_db
 from app.schemas.token import Token
 from app.schemas.user import RegisterResponse, UserCreate, UserResponse
-from app.services.user import authenticate_user, register_user
+from app.services import user as user_service
 
 router = APIRouter(prefix=AUTH_PREFIX, tags=["auth"])
 
@@ -16,7 +16,7 @@ router = APIRouter(prefix=AUTH_PREFIX, tags=["auth"])
     "/register", response_model=RegisterResponse, status_code=status.HTTP_201_CREATED
 )
 async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
-    user = await register_user(db, user_in)
+    user = await user_service.register_user(db, user_in)
 
     access_token = create_access_token({"sub": user.email})
 
@@ -29,6 +29,6 @@ async def register(user_in: UserCreate, db: AsyncSession = Depends(get_db)):
 async def login(
     form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)
 ):
-    user = await authenticate_user(db, form_data.username, form_data.password)
+    user = await user_service.authenticate_user(db, form_data.username, form_data.password)
     access_token = create_access_token({"sub": user.email})
     return Token(access_token=access_token)
