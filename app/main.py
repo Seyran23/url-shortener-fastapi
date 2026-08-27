@@ -2,6 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from app.api.health import router as health_router
+from app.api.redirect import router as redirect_router
 from app.api.v1.router import api_router
 from app.core.exceptions import AppError
 
@@ -18,3 +19,4 @@ async def app_error_handler(request: Request, exp: AppError) -> JSONResponse:
 
 app.include_router(health_router)
 app.include_router(api_router)
+app.include_router(redirect_router)
