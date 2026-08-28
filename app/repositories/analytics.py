@@ -1,9 +1,11 @@
+from datetime import datetime
 from uuid import UUID
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.analytics import Analytics
+from app.models.link import Link
 
 
 async def create_analytics(
@@ -91,7 +93,7 @@ async def get_by_browser(db: AsyncSession, link_id: UUID) -> list[dict]:
     )
     return [{"browser": row.browser, "count": row.count} for row in browser_data.fetchall()]
 
-async def get_by_referrer(db: AsyncSession, link_id: UUID) -> list[dict]:   
+async def get_by_referrer(db: AsyncSession, link_id: UUID) -> list[dict]:
     referrer_data = await db.execute(
         select(
             Analytics.referer.label("referer"),
@@ -101,3 +103,118 @@ async def get_by_referrer(db: AsyncSession, link_id: UUID) -> list[dict]:
         .group_by(Analytics.referer)
     )
     return [{"referer": row.referer, "count": row.count} for row in referrer_data.fetchall()]
+
+
+async def get_owner_summary(db: AsyncSession, user_id: UUID) -> dict:
+    total_clicks = await db.scalar(
+        select(func.count(Analytics.id))
+        .join(Link, Analytics.link_id == Link.id)
+        .where(Link.user_id == user_id)
+    )
+    unique_visitors = await db.scalar(
+        select(func.count(func.distinct(Analytics.visitor_hash)))
+        .join(Link, Analytics.link_id == Link.id)
+        .where(Link.user_id == user_id)
+    )
+    return {"total_clicks": total_clicks or 0, "unique_visitors": unique_visitors or 0}
+
+
+async def get_owner_clicks_since(db: AsyncSession, user_id: UUID, since: datetime) -> int:
+    count = await db.scalar(
+        select(func.count(Analytics.id))
+        .join(Link, Analytics.link_id == Link.id)
+        .where(Link.user_id == user_id, Analytics.clicked_at >= since)
+    )
+    return count or 0
+
+
+async def get_owner_top_links(db: AsyncSession, user_id: UUID, limit: int = 5) -> list[dict]:
+    result = await db.execute(
+        select(
+            Link.original_url.label("original_url"),
+            func.count(Analytics.id).label("count"),
+        )
+        .join(Analytics, Analytics.link_id == Link.id)
+        .where(Link.user_id == user_id)
+        .group_by(Link.id, Link.original_url)
+        .order_by(func.count(Analytics.id).desc())
+        .limit(limit)
+    )
+    return [{"original_url": row.original_url, "count": row.count} for row in result.fetchall()]
+
+
+async def get_owner_top_links_since(
+    db: AsyncSession, user_id: UUID, since: datetime, limit: int = 5
+) -> list[dict]:
+    result = await db.execute(
+        select(
+            Link.original_url.label("original_url"),
+            func.count(Analytics.id).label("count"),
+        )
+        .join(Analytics, Analytics.link_id == Link.id)
+        .where(Link.user_id == user_id, Analytics.clicked_at >= since)
+        .group_by(Link.id, Link.original_url)
+        .order_by(func.count(Analytics.id).desc())
+        .limit(limit)
+    )
+    return [{"original_url": row.original_url, "count": row.count} for row in result.fetchall()]
+
+
+async def get_owner_by_country(db: AsyncSession, user_id: UUID, limit: int = 5) -> list[dict]:
+    result = await db.execute(
+        select(
+            Analytics.country.label("country"),
+            func.count(Analytics.id).label("count"),
+        )
+        .join(Link, Analytics.link_id == Link.id)
+        .where(Link.user_id == user_id)
+        .group_by(Analytics.country)
+        .order_by(func.count(Analytics.id).desc())
+        .limit(limit)
+    )
+    return [{"country": row.country, "count": row.count} for row in result.fetchall()]
+
+
+async def get_owner_by_device(db: AsyncSession, user_id: UUID, limit: int = 5) -> list[dict]:
+    result = await db.execute(
+        select(
+            Analytics.device_type.label("device_type"),
+            func.count(Analytics.id).label("count"),
+        )
+        .join(Link, Analytics.link_id == Link.id)
+        .where(Link.user_id == user_id)
+        .group_by(Analytics.device_type)
+        .order_by(func.count(Analytics.id).desc())
+        .limit(limit)
+    )
+    return [{"device_type": row.device_type, "count": row.count} for row in result.fetchall()]
+
+
+async def get_owner_by_browser(db: AsyncSession, user_id: UUID, limit: int = 5) -> list[dict]:
+    result = await db.execute(
+        select(
+            Analytics.browser.label("browser"),
+            func.count(Analytics.id).label("count"),
+        )
+        .join(Link, Analytics.link_id == Link.id)
+        .where(Link.user_id == user_id)
+        .group_by(Analytics.browser)
+        .order_by(func.count(Analytics.id).desc())
+        .limit(limit)
+    )
+    return [{"browser": row.browser, "count": row.count} for row in result.fetchall()]
+
+
+async def get_owner_by_referrer(db: AsyncSession, user_id: UUID, limit: int = 5) -> list[dict]:
+    result = await db.execute(
+        select(
+            Analytics.referer.label("referer"),
+            func.count(Analytics.id).label("count"),
+        )
+        .join(Link, Analytics.link_id == Link.id)
+        .where(Link.user_id == user_id)
+        .group_by(Analytics.referer)
+        .order_by(func.count(Analytics.id).desc())
+        .limit(limit)
+    )
+    return [{"referer": row.referer, "count": row.count} for row in result.fetchall()]
