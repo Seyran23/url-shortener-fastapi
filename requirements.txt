@@ -39,6 +39,7 @@ python-dotenv==1.2.3
 python-jose==3.5.0
 python-multipart==0.0.32
 PyYAML==6.0.3
+redis==8.1.0
 requests==2.34.2
 rsa==4.9.1
 six==1.17.0
@@ -46,7 +47,10 @@ SQLAlchemy==2.0.52
 starlette==1.6.0
 typing-inspection==0.4.4
 typing_extensions==4.16.0
+ua-parser==1.0.2
+ua-parser-builtins==202606
 urllib3==2.7.0
+user-agents==2.2.0
 uvicorn==0.52.4
 uvloop==0.22.1
 watchfiles==1.2.0

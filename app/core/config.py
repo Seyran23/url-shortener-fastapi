@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     BASE_URL: str = "http://localhost:8000"
     ENVIRONMENT: str = "development"
     DATABASE_URL: str
+    REDIS_URL: str = "redis://localhost:6381"
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
