@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    TELEGRAM_BOT_TOKEN: str
+    TELEGRAM_CHAT_ID: int
+    TELEGRAM_OWNER_EMAIL: str | None = None
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
