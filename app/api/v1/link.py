@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import get_current_user
 from app.core.constants import LINKS_PREFIX
+from app.core.rate_limit import rate_limiter
 from app.db.session import get_db
 from app.models.user import User
 from app.schemas.links import LinkCreate, LinkResponse, LinkUpdate
@@ -13,7 +14,12 @@ from app.services import link as link_service
 router = APIRouter(prefix=LINKS_PREFIX, tags=["links"])
 
 
-@router.post(path="", response_model=LinkResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    path="",
+    response_model=LinkResponse,
+    status_code=status.HTTP_201_CREATED,
+    dependencies=[Depends(rate_limiter(max_requests=20, window_seconds=60))],
+)
 async def create_link(
     link_data: LinkCreate,
     current_user: User = Depends(get_current_user),
