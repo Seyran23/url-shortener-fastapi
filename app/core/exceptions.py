@@ -53,3 +53,8 @@ class LinkUnavailableError(AppError):
     status_code = 410
     error_code = "link_unavailable"
 
+class RateLimitExceededError(AppError):
+    """Too many requests. Please try again later."""
+    status_code = 429
+    error_code = "rate_limit_exceeded"
+
