@@ -17,6 +17,7 @@ from app.core.exceptions import (
 from app.core.geo import resolve_country
 from app.core.helpers.hashing import hash_visitor
 from app.core.helpers.short_code import generate_short_code
+from app.core.helpers.user_agent import parse_user_agent
 from app.db.session import SessionLocal
 from app.models.link import Link
 from app.repositories import analytics as analytics_repo
@@ -100,8 +101,17 @@ async def log_click(
 ) -> None:
     async with SessionLocal() as db:
         country = resolve_country(ip_address)
+        browser, os, device_type = parse_user_agent(user_agent)
         await analytics_repo.create_analytics(
-            db, link_id, hash_visitor(ip_address, user_agent), user_agent, referer, country
+            db,
+            link_id,
+            hash_visitor(ip_address, user_agent),
+            user_agent,
+            referer,
+            country,
+            browser,
+            os,
+            device_type,
         )
         await db.commit()
 
