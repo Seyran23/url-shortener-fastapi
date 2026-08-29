@@ -44,9 +44,11 @@ async def create(db: AsyncSession, user_id: UUID, link_data: LinkCreate) -> Link
                 "Link created: short_code=%s owner=%s custom_alias=True", link.short_code, user_id
             )
             return link
-        except IntegrityError:
+        except IntegrityError as e:
             await db.rollback()
-            raise AliasAlreadyExistsError()
+            if getattr(e.orig.__cause__, "constraint_name", None) == "ix_links_short_code":
+                raise AliasAlreadyExistsError()
+            raise
 
     for attempt in range(1, MAX_GENERATION_ATTEMPTS + 1):
         try:
@@ -63,8 +65,10 @@ async def create(db: AsyncSession, user_id: UUID, link_data: LinkCreate) -> Link
                 "Link created: short_code=%s owner=%s custom_alias=False", link.short_code, user_id
             )
             return link
-        except IntegrityError:
+        except IntegrityError as e:
             await db.rollback()
+            if getattr(e.orig.__cause__, "constraint_name", None) != "ix_links_short_code":
+                raise
             logger.warning(
                 "Generated short code collided, retrying: attempt=%d/%d",
                 attempt,
