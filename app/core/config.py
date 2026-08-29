@@ -8,12 +8,15 @@ class Settings(BaseSettings):
     BASE_URL: str = "http://localhost:8000"
     ENVIRONMENT: str = "development"
     DATABASE_URL: str
+    TEST_DATABASE_URL: str = (
+        "postgresql+asyncpg://url_shortener:url_shortener@localhost:5434/url_shortener_test"
+    )
     REDIS_URL: str = "redis://localhost:6381"
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
-    TELEGRAM_BOT_TOKEN: str
-    TELEGRAM_CHAT_ID: int
+    TELEGRAM_BOT_TOKEN: str | None = None
+    TELEGRAM_CHAT_ID: int | None = None
     TELEGRAM_OWNER_EMAIL: str | None = None
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
