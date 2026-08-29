@@ -130,6 +130,11 @@ async def send_weekly_report(bot: Bot) -> None:
 
 
 async def main() -> None:
+    if settings.TELEGRAM_BOT_TOKEN is None:
+        raise RuntimeError("TELEGRAM_BOT_TOKEN is not configured")
+    if settings.TELEGRAM_CHAT_ID is None:
+        raise RuntimeError("TELEGRAM_CHAT_ID is not configured")
+
     bot = Bot(token=settings.TELEGRAM_BOT_TOKEN)
     dp = Dispatcher()
     dp.include_router(router)
