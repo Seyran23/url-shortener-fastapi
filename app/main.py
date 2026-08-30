@@ -1,11 +1,13 @@
 import logging
 
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.api.health import router as health_router
 from app.api.redirect import router as redirect_router
 from app.api.v1.router import api_router
+from app.core.config import settings
 from app.core.exceptions import AppError
 from app.core.logging_config import configure_logging
 
@@ -13,6 +15,13 @@ configure_logging()
 logger = logging.getLogger(__name__)
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.exception_handler(AppError)

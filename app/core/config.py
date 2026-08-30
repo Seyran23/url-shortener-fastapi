@@ -16,8 +16,7 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     TELEGRAM_BOT_TOKEN: str | None = None
-    TELEGRAM_CHAT_ID: int | None = None
-    TELEGRAM_OWNER_EMAIL: str | None = None
+    CORS_ORIGINS: list[str] = ["http://localhost:5173"]
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
