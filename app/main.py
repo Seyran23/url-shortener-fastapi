@@ -10,6 +10,7 @@ from app.api.v1.router import api_router
 from app.core.config import settings
 from app.core.exceptions import AppError
 from app.core.logging_config import configure_logging
+from app.core.timing_middleware import TimingMiddleware
 
 configure_logging()
 logger = logging.getLogger(__name__)
@@ -22,6 +23,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(TimingMiddleware)
 
 
 @app.exception_handler(AppError)
