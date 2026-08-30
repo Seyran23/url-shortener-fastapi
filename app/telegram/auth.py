@@ -4,45 +4,33 @@ from uuid import UUID
 
 from aiogram.types import Message
 
-from app.core.config import settings
+from app.db.session import SessionLocal
 from app.repositories import user as user_repo
-from app.telegram.formatters import format_error
+from app.telegram.formatters import format_error, format_not_linked
 
 logger = logging.getLogger(__name__)
 
-_owner_user_id: UUID | None = None
 
-
-def is_authorized(message: Message) -> bool:
-    return message.chat.id == settings.TELEGRAM_CHAT_ID
-
-
-async def get_owner_id(db) -> UUID:
-    global _owner_user_id
-    if _owner_user_id is None:
-        if settings.TELEGRAM_OWNER_EMAIL is None:
-            raise RuntimeError("TELEGRAM_OWNER_EMAIL is not configured")
-
-        user = await user_repo.get_by_email(db, settings.TELEGRAM_OWNER_EMAIL)
-        if user is None:
-            raise RuntimeError(
-                f"No user found for TELEGRAM_OWNER_EMAIL={settings.TELEGRAM_OWNER_EMAIL}"
-            )
-        _owner_user_id = user.id
-    return _owner_user_id
+async def resolve_user_id(chat_id: int) -> UUID | None:
+    async with SessionLocal() as db:
+        user = await user_repo.get_by_telegram_chat_id(db, chat_id)
+        return user.id if user else None
 
 
 def authorized_handler(func):
     @wraps(func)
     async def wrapper(message: Message) -> None:
-        if not is_authorized(message):
+        user_id = await resolve_user_id(message.chat.id)
+
+        if user_id is None:
             logger.warning(
-                "Ignored %r from unauthorized chat_id=%s", message.text, message.chat.id
+                "Ignored %r from unlinked chat_id=%s", message.text, message.chat.id
             )
+            await message.answer(format_not_linked())
             return
 
         try:
-            await func(message)
+            await func(message, user_id)
         except Exception:
             logger.exception("Failed to handle %r", message.text)
             await message.answer(format_error())
