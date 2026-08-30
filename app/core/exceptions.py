@@ -58,3 +58,13 @@ class RateLimitExceededError(AppError):
     status_code = 429
     error_code = "rate_limit_exceeded"
 
+class InvalidTelegramLinkCodeError(AppError):
+    """This code is invalid or has expired."""
+    status_code = 400
+    error_code = "invalid_telegram_link_code"
+
+class TelegramChatAlreadyLinkedError(AppError):
+    """This Telegram account is already linked to a different account."""
+    status_code = 409
+    error_code = "telegram_chat_already_linked"
+
