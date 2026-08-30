@@ -1,7 +1,14 @@
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    Field,
+    computed_field,
+    field_validator,
+)
 
 from app.schemas.token import Token
 
@@ -26,10 +33,21 @@ class UserResponse(BaseModel):
     id: uuid.UUID
     email: EmailStr
     created_at: datetime
-    
+    telegram_chat_id: int | None = Field(default=None, exclude=True)
+
     model_config = ConfigDict(from_attributes=True)
+
+    @computed_field
+    @property
+    def telegram_linked(self) -> bool:
+        return self.telegram_chat_id is not None
     
 
 class RegisterResponse(BaseModel):
     user: UserResponse
     token: Token
+
+
+class TelegramLinkCodeResponse(BaseModel):
+    code: str
+    expires_in_seconds: int
